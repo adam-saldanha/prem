@@ -222,12 +222,3 @@ This project is licensed under the MIT License.
 - [Material-UI](https://mui.com/) for the component library
 - Premier League for the inspiration
 
-## 📧 Contact
-
-Your Name - [@yourtwitter](https://twitter.com/yourtwitter)
-
-Project Link: [https://github.com/yourusername/prem-pulse](https://github.com/yourusername/prem-pulse)
-
----
-
-⭐ Star this repo if you find it helpful!
