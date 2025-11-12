@@ -1,0 +1,69 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: pl-postgres
+    environment:
+      POSTGRES_DB: premierleague
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGPORT: 5434
+    ports:
+      - "5434:5434"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - pl-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -p 5434"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pl-backend
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5434
+      DB_NAME: premierleague
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      JWT_SECRET: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      CORS_ORIGINS: http://localhost,http://localhost:3000,http://localhost:80
+      FOOTBALL_DATA_API_KEY: d080696a2dff47e9935db3276b6f349a
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - pl-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: pl-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - pl-network
+    environment:
+      REACT_APP_API_URL: http://localhost:8080/api
+
+networks:
+  pl-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
